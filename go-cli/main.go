@@ -37,7 +37,7 @@ func main() {
 	tenantID := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 	clientID := "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
-	scopes := "api://term/access"
+	scopes := "api://termpad/access"
 
 	pkce, err := oauth2params.NewPKCE()
 	if err != nil {
