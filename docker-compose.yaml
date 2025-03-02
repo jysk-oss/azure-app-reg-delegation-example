@@ -1,0 +1,69 @@
+networks:
+  termpad:
+    name: termpad
+  traefik-proxy:
+    name: traefik-proxy
+
+volumes:
+  termpad-data:
+
+services:
+  traefik:
+    image: traefik:v3.3
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - --api=true
+      - --api.dashboard=false
+      - --log.level=info
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entryPoint.to=websecure
+      - --entrypoints.websecure.address=:443
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --certificatesresolvers.le.acme.email=your-email@example.com
+      - --certificatesresolvers.le.acme.storage=/acme.json
+      - --certificatesresolvers.le.acme.tlschallenge=true
+    ports:
+      - 80:80
+      - 443:443
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./acme.json:/acme.json
+    networks:
+      - traefik-proxy
+
+  termpad:
+    image: spyrosr/termpad
+    container_name: termpad
+    restart: unless-stopped
+    expose:
+      - 8000
+    environment:
+      - DOMAIN_NAME=termpad.your-domain.net
+      - HTTPS=true
+    volumes:
+      - termpad-data:/termpad/share
+    networks:
+      - termpad
+
+  oauth2-proxy:
+    image: quay.io/oauth2-proxy/oauth2-proxy:v7.8.1
+    container_name: oauth2-proxy
+    restart: unless-stopped
+    command: --config /oauth2-proxy.toml
+    volumes:
+      - "./oauth2-proxy.toml:/oauth2-proxy.toml"
+    expose:
+      - 4180
+    networks:
+      - termpad
+      - traefik-proxy
+    labels:
+      - traefik.enable=true
+      - traefik.http.services.termpad.loadbalancer.server.port=4180
+      - traefik.http.routers.termpad.rule=Host(`termpad.your-domain.net`)
+      - traefik.http.routers.termpad.tls.certresolver=le
+      - traefik.http.routers.termpad.entrypoints=websecure
+      - traefik.docker.network=traefik-proxy
+

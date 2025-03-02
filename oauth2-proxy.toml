@@ -1,0 +1,49 @@
+# The setting you need to configure are at the top part of
+# this configuration file.
+
+# The OAuth2Proxy/termpad App Registration client ID and client secret.
+client_id = "<termpad-app-reg-client-id>"
+client_secret = "<termpad-app-reg-secret>"
+
+# The OpenID Connect issuer URL.
+# Replace the <tenant-id> with you Azure Tenant ID.
+oidc_issuer_url = "https://login.microsoftonline.com/<tenant-id-here>/v2.0"
+
+# A list of extra JWT issuer=audience
+# This is needed because the access token retrived for termpad with have below "iss" and "aud" values.
+# Replace the <tenant-id> with you Azure Tenant ID.
+extra_jwt_issuers = "https://sts.windows.net/<tenant-id-here>/=api://termpad"
+
+# A list of email domains to allow authentication for.
+email_domains = ["your-azure-email-domain.onmicrosoft.com"]
+
+# The signing key to secure cookies.
+# For this PoC example it is not needed to change it, but you can if you want.
+# Use below bash comamnd to generate one.
+# dd if=/dev/urandom bs=32 count=1 2>/dev/null | base64 | tr -d -- '\n' | tr -- '+/' '-_' ; echo
+cookie_secret = "TK3ao-hqeSNwdL1Irg5tZmbbyjPecUXG_wKP5M53QZM="
+
+############################################################
+#           Changing setting below is not needed           #
+############################################################
+
+# Address/port to listen on.
+http_address = "0.0.0.0:4180"
+
+# The upstream service OAuth2 Proxy will proxy the requests to, in this case termpad.
+upstreams = "http://termpad:8000"
+
+# OAuth provider, in this case Azure EntraID former known as Azure AD.
+provider = "entra-id"
+
+# OAuth scope specification.
+scope = "openid"
+
+# Will skip requests that have verified JWT bearer token.
+# The token must have ab audience that matches the App Registration client id
+# or one of the extras from extra-jwt-issuers setting.
+skip_jwt_bearer_tokens = "true"
+
+# With below setting you skip the page with the "Login with EntraID"
+# button you need to press everytime you login.
+skip_provider_button = "true"
