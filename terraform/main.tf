@@ -142,6 +142,17 @@ resource "azuread_application" "cli_client" {
   }
 }
 
+# Registers the cli-tool application as a service principal in Azure AD.
+resource "azuread_service_principal" "cli_client" {
+  client_id = azuread_application.cli_client.client_id
+}
+
+resource "azuread_service_principal_delegated_permission_grant" "cli_grants" {
+  service_principal_object_id          = azuread_service_principal.cli_client.object_id
+  resource_service_principal_object_id = azuread_service_principal.msgraph.object_id
+  claim_values                         = ["openid"]
+}
+
 ############################################################
 #                        Outputs                           #
 ############################################################
